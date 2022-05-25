@@ -1,71 +1,51 @@
 #include <Arduino.h>
-#include "ArduinoTimer/Timer.h"
+#include "SimpleTimer/Timer.h"
 #include "OneButton.h"
 
 Timer t;
-uint8_t id;
-byte b;
-int state;
+OneButton btn(A1);
+OneButton btn1(A2);
 
-OneButton btn1(A1);
-OneButton btn2(A2);
-OneButton btn3(A3);
+byte ledValue;
 
-void blink() {
-  state = !state;
-  digitalWrite(LED_BUILTIN, state);
+void blink()
+{
+  ledValue = !ledValue;
+  digitalWrite(LED_BUILTIN, ledValue);
 }
 
-void initTimer() {
-  Serial.println("timer initialized");
-  id = t.every(1000, blink);
+void start()
+{
+  t.start();
 }
 
-void startTimer() {
-  Serial.println("timer started");
-  t.start(id);
+void pause()
+{
+  t.pause();
 }
 
-void pauseTimer() {
-  Serial.println("timer paused");
-  t.pause(id);
-}
-
-void resumeTimer() {
-  Serial.println("timer resumed");
-  t.resume(id);
-}
-
-void stopTimer(){
-  Serial.println("timer stopped");
-  t.stop(id);
-}
-
-void clearTimer() {
-  Serial.println("timer cleared");
-  t.clear(id);
+void stop()
+{
+  t.stop();
 }
 
 void setup() {
+  ledValue = HIGH;
+  
   Serial.begin(9600);
-  state = HIGH;
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, state);
-  Serial.println("led shutdown");
-  
-  btn1.attachClick(startTimer);
-  btn1.attachDoubleClick(initTimer);
 
-  btn2.attachClick(pauseTimer);
-  btn2.attachDoubleClick(resumeTimer);
-  
-  btn3.attachClick(stopTimer);
-  btn3.attachDoubleClick(clearTimer);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, ledValue);
+
+  btn.attachClick(start);
+  btn1.attachClick(pause);
+  btn1.attachDoubleClick(stop);
+
+  t.init(1000, blink);
 }
 
 void loop() {
   t.update();
+  btn.tick();
   btn1.tick();
-  btn2.tick();
-  btn3.tick();
 }
